@@ -219,3 +219,11 @@ source-repository-package
       libs/small-steps-test
       libs/non-integral
     --sha256: 1jg1h05gcms119mw7fz798xpj3hr5h426ga934vixmgf88m1jmfx
+
+source-repository-package
+  type: git
+  location: https://github.com/input-output-hk/marlowe-cardano
+  tag: 523f3d56f22bf992ddb0b0c8a52bb7a5a188f9e9
+  subdir:
+    marlowe
+    libs/base16-aeson
