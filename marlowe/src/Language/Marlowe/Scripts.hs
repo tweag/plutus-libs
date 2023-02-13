@@ -88,7 +88,7 @@ import Plutus.V2.Ledger.Api
 import qualified Plutus.V2.Ledger.Api as Ledger (Address(Address))
 import Plutus.V2.Ledger.Contexts (findDatum, findDatumHash, txSignedBy, valueSpent)
 import Plutus.V2.Ledger.Tx (OutputDatum(OutputDatumHash), TxOut(TxOut, txOutAddress, txOutDatum, txOutValue))
-import PlutusTx (makeIsDataIndexed, makeLift, unsafeFromBuiltinData)
+import PlutusTx (UnsafeFromData, makeIsDataIndexed, makeLift, unsafeFromBuiltinData)
 import qualified PlutusTx
 import qualified PlutusTx.AssocMap as AssocMap
 import PlutusTx.Plugin ()
@@ -96,12 +96,11 @@ import PlutusTx.Prelude as PlutusTxPrelude
 import qualified Prelude as Haskell
 import Unsafe.Coerce (unsafeCoerce)
 
-import Plutus.V1.Ledger.Api qualified as PV1
 import Ledger.Typed.Scripts (unsafeMkTypedValidator)
 
 mkUntypedValidator ::
   forall d r.
-  (PV1.UnsafeFromData d, PV1.UnsafeFromData r) =>
+  (UnsafeFromData d, UnsafeFromData r) =>
   (d -> r -> ScriptContext -> Bool) ->
   Scripts.UntypedValidator
 -- We can use unsafeFromBuiltinData here as we would fail immediately anyway if parsing failed
