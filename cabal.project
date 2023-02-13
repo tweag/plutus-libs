@@ -1,6 +1,7 @@
 packages:
   cooked-validators
   examples
+  marlowe
 
 package cardano-crypto-praos
   flags: -external-libsodium-vrf
@@ -78,6 +79,7 @@ allow-newer:
   , servant:aeson
   , servant-client-core:aeson
   , servant-server:aeson
+  , marlowe:aeson
 
 constraints:
   -- cardano-prelude-0.1.0.0 needs
@@ -225,5 +227,5 @@ source-repository-package
   location: https://github.com/input-output-hk/marlowe-cardano
   tag: 523f3d56f22bf992ddb0b0c8a52bb7a5a188f9e9
   subdir:
-    marlowe
+    -- marlowe
     libs/base16-aeson
