@@ -61,10 +61,7 @@ import GHC.Generics (Generic)
 import Language.Marlowe.Core.V1.Semantics as Semantics
 import Language.Marlowe.Core.V1.Semantics.Types as Semantics
 import Language.Marlowe.Pretty (Pretty(..))
-import qualified Plutus.Script.Utils.Scripts as Scripts (mintingPolicyHash)
-import qualified Plutus.Script.Utils.Scripts as Untyped (validatorHash)
 import qualified Plutus.Script.Utils.Typed as Scripts
-import Plutus.Script.Utils.V1.Typed.Scripts.MonetaryPolicies qualified as MPS
 import Plutus.Script.Utils.V2.Typed.Scripts (mkTypedValidator)
 import qualified Plutus.Script.Utils.V2.Typed.Scripts as Scripts
 import qualified Plutus.V1.Ledger.Address as Address (scriptHashAddress)
@@ -100,6 +97,7 @@ import qualified Prelude as Haskell
 import Unsafe.Coerce (unsafeCoerce)
 
 import Plutus.V1.Ledger.Api qualified as PV1
+import Ledger.Typed.Scripts (unsafeMkTypedValidator)
 
 mkUntypedValidator ::
   forall d r.
@@ -109,19 +107,6 @@ mkUntypedValidator ::
 -- We can use unsafeFromBuiltinData here as we would fail immediately anyway if parsing failed
 mkUntypedValidator f d r p =
   check $ f (unsafeFromBuiltinData d) (unsafeFromBuiltinData r) (unsafeFromBuiltinData p)
-
--- | Make a 'TypedValidator' (with no type constraints) from an untyped 'Validator' script.
-unsafeMkTypedValidator :: Scripts.Validator -> Scripts.TypedValidator Scripts.Any
-unsafeMkTypedValidator vl =
-  Scripts.TypedValidator
-    { tvValidator = Scripts.Versioned vl Scripts.PlutusV1,
-      tvValidatorHash = vh,
-      tvForwardingMPS = mps,
-      tvForwardingMPSHash = Scripts.mintingPolicyHash mps
-    }
-  where
-    vh = Untyped.validatorHash (Scripts.Versioned vl Scripts.PlutusV1)
-    mps = Scripts.Versioned (MPS.mkForwardingMintingPolicy vh) Scripts.PlutusV1
 
 -- | Input to a Marlowe transaction.
 type MarloweInput = [MarloweTxInput]
@@ -436,7 +421,7 @@ marloweValidator =
         `PlutusTx.applyCode` PlutusTx.liftCode rolePayoutValidatorHash
 
     typedValidator :: Scripts.TypedValidator Scripts.Any
-    typedValidator = unsafeMkTypedValidator untypedValidator
+    typedValidator = unsafeMkTypedValidator (Scripts.Versioned untypedValidator Scripts.PlutusV1)
   in
     unsafeCoerce typedValidator
 

@@ -59,6 +59,7 @@ library
     mtl,
     newtype-generics,
     ordered-containers,
+    plutus-ledger,
     plutus-ledger-api,
     plutus-script-utils,
     plutus-tx,
