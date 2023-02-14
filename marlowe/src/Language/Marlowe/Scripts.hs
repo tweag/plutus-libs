@@ -88,7 +88,7 @@ import Plutus.V2.Ledger.Api
 import qualified Plutus.V2.Ledger.Api as Ledger (Address(Address))
 import Plutus.V2.Ledger.Contexts (findDatum, findDatumHash, txSignedBy, valueSpent)
 import Plutus.V2.Ledger.Tx (OutputDatum(OutputDatumHash), TxOut(TxOut, txOutAddress, txOutDatum, txOutValue))
-import PlutusTx (UnsafeFromData, makeIsDataIndexed, makeLift, unsafeFromBuiltinData)
+import PlutusTx (makeIsDataIndexed, makeLift, unsafeFromBuiltinData)
 import qualified PlutusTx
 import qualified PlutusTx.AssocMap as AssocMap
 import PlutusTx.Plugin ()
@@ -97,15 +97,6 @@ import qualified Prelude as Haskell
 import Unsafe.Coerce (unsafeCoerce)
 
 import Ledger.Typed.Scripts (unsafeMkTypedValidator)
-
-mkUntypedValidator ::
-  forall d r.
-  (UnsafeFromData d, UnsafeFromData r) =>
-  (d -> r -> ScriptContext -> Bool) ->
-  Scripts.UntypedValidator
--- We can use unsafeFromBuiltinData here as we would fail immediately anyway if parsing failed
-mkUntypedValidator f d r p =
-  check $ f (unsafeFromBuiltinData d) (unsafeFromBuiltinData r) (unsafeFromBuiltinData p)
 
 -- | Input to a Marlowe transaction.
 type MarloweInput = [MarloweTxInput]
@@ -146,7 +137,7 @@ rolePayoutValidator = mkTypedValidator @TypedRolePayoutValidator
   $$(PlutusTx.compile [|| mkRolePayoutValidator ||])
   $$(PlutusTx.compile [|| wrap ||])
   where
-    wrap = mkUntypedValidator @(CurrencySymbol, TokenName) @()
+    wrap = Scripts.mkUntypedValidator
 
 
 {-# INLINABLE rolePayoutValidator #-}
@@ -412,7 +403,7 @@ marloweValidator :: Scripts.TypedValidator TypedMarloweValidator
 marloweValidator =
   let
     mkUntypedMarloweValidator :: ValidatorHash -> BuiltinData -> BuiltinData -> BuiltinData -> ()
-    mkUntypedMarloweValidator rp = mkUntypedValidator (mkMarloweValidator rp)
+    mkUntypedMarloweValidator rp = Scripts.mkUntypedValidator (mkMarloweValidator rp)
 
     untypedValidator :: Scripts.Validator
     untypedValidator = mkValidatorScript $
@@ -442,7 +433,7 @@ alternateMarloweValidator = Scripts.mkTypedValidator
           $$(PlutusTx.compile [|| mkMarloweValidator ||])
             `PlutusTx.applyCode`
               PlutusTx.liftCode rolePayoutValidatorHash
-        mkArgsValidator = mkUntypedValidator @MarloweData @MarloweInput
+        mkArgsValidator = Scripts.mkUntypedValidator
         compiledArgsValidator =
           $$(PlutusTx.compile [|| mkArgsValidator ||])
 

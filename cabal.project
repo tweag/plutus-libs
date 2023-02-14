@@ -1,6 +1,5 @@
 packages:
   cooked-validators
-  examples
   marlowe
 
 package cardano-crypto-praos
