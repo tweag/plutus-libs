@@ -18,7 +18,8 @@ import qualified Plutus.V1.Ledger.Value as Pl1
 -- TODO Migrate to V2 values (see imports)
 
 -- | A 'UtxoState' provides us with the mental picture of the state of the UTxO graph:
--- Each address has a set of UTxOs that consist in a value and some potential datum.
+-- Each address has a set of UTxOs that consist in a value, some potential
+-- datum, and some potential reference script.
 newtype UtxoState = UtxoState {utxoState :: Map Pl.Address UtxoPayloadSet}
   deriving (Eq)
 
@@ -33,10 +34,12 @@ instance Semigroup UtxoState where
   (UtxoState a) <> (UtxoState b) = UtxoState $ Map.unionWith (<>) a b
 
 -- | Represents a /set/ of payloads. Payloads are the name we give to the
--- information we care about on a UTxO: value, datum, and reference script. We
--- use a list instead of a set because 'Pl.Value' doesn't implement 'Ord' and
--- because it is possible that we want to distinguish between utxo states that
--- have additional utxos, even if these could have been merged together.
+-- information we care about on a UTxO: value, typed datum (wrapped in
+-- 'TxSkelOutDatum' which also informs about whether it hashed or inlined), and
+-- reference script. We use a list instead of a set because 'Pl.Value' doesn't
+-- implement 'Ord' and because it is possible that we want to distinguish
+-- between UTxO states that have additional UTxO, even if these could have been
+-- merged together.
 newtype UtxoPayloadSet = UtxoPayloadSet {utxoPayloadSet :: [UtxoPayload]}
   deriving (Show)
 
@@ -61,6 +64,6 @@ instance Semigroup UtxoPayloadSet where
 instance Monoid UtxoPayloadSet where
   mempty = UtxoPayloadSet []
 
--- | Computes the total value in a set
+-- | Computes the total value in a 'UtxoPayloadSet'.
 utxoPayloadSetTotal :: UtxoPayloadSet -> Pl1.Value
 utxoPayloadSetTotal = mconcat . fmap utxoPayloadValue . utxoPayloadSet
