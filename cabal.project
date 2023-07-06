@@ -11,24 +11,17 @@ source-repository-package
   subdir:
     cardano-node-emulator
     cardano-streaming
-    doc
     freer-extras
     marconi-chain-index
     marconi-core
-    marconi-sidechain
     pab-blockfrost
     plutus-chain-index
     plutus-chain-index-core
     plutus-contract
-    plutus-contract-certification
-    plutus-e2e-tests
-    plutus-example
     plutus-ledger
     plutus-pab
-    plutus-pab-executables
     plutus-script-utils
     plutus-tx-constraints
-    plutus-use-cases
 
 -- Everything below this point has been copied from plutus-apps' cabal.project
 
