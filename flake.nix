@@ -1,5 +1,5 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   inputs.pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
@@ -27,6 +27,7 @@
             ## NOTE: Configuring `hpack` here would have no effect. See
             ## https://github.com/cachix/pre-commit-hooks.nix/issues/255
             ## for more information.
+            ormolu = hpkgs.haskell-language-server;
           };
         };
       in {
@@ -34,8 +35,7 @@
 
         devShells = let
           ## The minimal dependency set to build the project with `cabal`.
-          buildInputs = ([ hpkgs.ghc ]) ++ (with pkgs; [
-            cabal-install
+          buildInputs = (with hpkgs; [ ghc cabal-install ]) ++ (with pkgs; [
             libsodium
             secp256k1
             pkg-config
@@ -63,12 +63,10 @@
           };
 
           default = pkgs.mkShell {
-            ## NOTE: `pkgs.ormolu` must appear before `hpkgs.haskell-language-server`
-            ## in the `buildInputs`, so as to take precedence. This ensures that the
-            ## version of Ormolu available in the path is that of nixpkgs and not the
-            ## one pinned by HLS.
-            buildInputs = buildInputs ++ (with pkgs; [ ormolu hpack hlint ])
-              ++ (with hpkgs; [ haskell-language-server ]);
+            ## NOTE: haskell-language-server provides ormolu, so there's no
+            ## need to add it here.
+            buildInputs = buildInputs
+              ++ (with hpkgs; [ haskell-language-server hpack hlint ]);
             inherit (pre-commit) shellHook;
             inherit LD_LIBRARY_PATH;
             inherit LANG;
