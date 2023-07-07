@@ -1,8 +1,14 @@
 {
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
-  inputs.pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "";
+    };
+  };
 
   outputs = { self, nixpkgs, flake-utils, pre-commit-hooks }:
     flake-utils.lib.eachDefaultSystem (system:
@@ -19,11 +25,11 @@
           };
           tools = {
             ## This setting specifies which tools to use in the `pre-commit`
-            ## hooks. Since we take our tools (`nixfmt`, `ormolu`, `hpack`) from
+            ## hooks. Since we take our tools (`nixfmt`, `hpack`) from
             ## `nixpkgs`, then we can simply make sure that
             ## `pre-commit-hooks.nix`'s `nixpkgs` input follows ours, so there
             ## is nothing to see here.
-            ##
+
             ## NOTE: Configuring `hpack` here would have no effect. See
             ## https://github.com/cachix/pre-commit-hooks.nix/issues/255
             ## for more information.
