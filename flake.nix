@@ -27,7 +27,17 @@
             ## NOTE: Configuring `hpack` here would have no effect. See
             ## https://github.com/cachix/pre-commit-hooks.nix/issues/255
             ## for more information.
-            ormolu = hpkgs.haskell-language-server;
+
+            ## NOTE: We want Ormolu to be exactly the one provided by HLS.
+            ## However, `pre-commit-hooks.nix` expects as an `ormolu` tool a
+            ## derivation containing a file `bin/ormolu`, which HLS's derivation
+            ## does not provide. We therefore build a fake one that immediately
+            ## executes to the runtime version of `ormolu` provided by HLS.
+            ormolu = pkgs.writeShellApplication {
+              name = "ormolu";
+              runtimeInputs = [ hpkgs.haskell-language-server ];
+              text = ''exec ormolu "$@"'';
+            };
           };
         };
       in {
