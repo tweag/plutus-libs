@@ -16,6 +16,7 @@ dependencies:
   - data-default
   - either
   - flat
+  - graft
   - list-t
   - monad-control
   - mtl

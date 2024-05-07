@@ -18,7 +18,14 @@ source-repository-package
     plutus-ledger
     plutus-script-utils
     freer-extras
-  
+
+source-repository-package
+  type: git
+  location: https://github.com/tweag/graft
+  tag: fe9310135a01a78fa3e5920c5b841d67197fdfdc
+  subdir:
+    .
+    
 -- Everything below this point has been copied from cardano-node-emulator cabal.project
 
 -- Custom repository for cardano haskell packages
