@@ -10,6 +10,7 @@ module Cooked.MockChain.UtxoSearch
     utxosAtLedgerSearch,
     utxosFromCardanoTxSearch,
     txOutByRefSearch,
+    filterWithTxOutRef,
     filterWith,
     filterWithPure,
     filterWithOptic,
@@ -82,20 +83,33 @@ txOutByRefSearch orefs =
   ListT.traverse (\o -> return (o, o)) (ListT.fromFoldable orefs)
     `filterWith` txOutByRef
 
--- * filtering UTxO searches
+-- * Most general filtering
+
+filterSearch :: (Monad m) => UtxoSearch m a -> ((Api.TxOutRef, a) -> m (Maybe (Api.TxOutRef, b))) -> UtxoSearch m b
+filterSearch (ListT as) f =
+  ListT $
+    as >>= \case
+      Nothing -> return Nothing
+      Just (el, (`filterSearch` f) -> filteredRest@(ListT bs)) ->
+        f el >>= \case
+          Nothing -> bs
+          Just el' -> return $ Just (el', filteredRest)
+
+-- * Filtering on TxOutRefs
+
+-- | Transform a 'UtxoSearch' by applying a monadic predicate on a TxOutRef
+filterWithTxOutRef :: (Monad m) => UtxoSearch m a -> (Api.TxOutRef -> m Bool) -> UtxoSearch m a
+filterWithTxOutRef search predTxOutRef = filterSearch search $
+  \(oRef, a) -> do
+    res <- predTxOutRef oRef
+    return $ if res then Just (oRef, a) else Nothing
+
+-- * Filtering on associated value
 
 -- | Transform a 'UtxoSearch' by applying a possibly failing monadic "lookup" on
 -- every output.
 filterWith :: (Monad m) => UtxoSearch m a -> (a -> m (Maybe b)) -> UtxoSearch m b
-filterWith (ListT as) f =
-  ListT $
-    as >>= \case
-      Nothing -> return Nothing
-      Just ((oref, a), rest) ->
-        let filteredRest@(ListT bs) = filterWith rest f
-         in f a >>= \case
-              Nothing -> bs
-              Just b -> return $ Just ((oref, b), filteredRest)
+filterWith search predEl = filterSearch search $ \(oref, a) -> ((oref,) <$>) <$> predEl a
 
 filterWithPure :: (Monad m) => UtxoSearch m a -> (a -> Maybe b) -> UtxoSearch m b
 filterWithPure as f = filterWith as (return . f)
