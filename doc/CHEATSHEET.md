@@ -181,7 +181,7 @@ txSkelTemplate
 
 * No redeemer: `emptyTxSkelRedeemer`
 * With a given redeemer: `someTxSkelRedeemer myRedeemer`
-* Attach a reference input (with a reference script): `redeemer \`withReferenceInput\` txOutRef`
+* Attach a reference input (with a reference script): ``redeemer `withReferenceInput` txOutRef``
 
 ```haskell
 txSkelTemplate
@@ -245,7 +245,7 @@ foo txOutRef = do
 
 * No redeemer: `(Script.Versioned fooPolicy Script.PlutusV3, emptyTxSkelRedeemer, "fooName", 3)`
 * With redeemer: `(Script.Versioned barPolicy Script.PlutusV3, someTxSkelRedeemer typedRedeemer, "barName", -3)`
-* With a redeemer and explicit reference script: `(Script.Versioned barPolicy Script.PlutusV3, someTxSkelRedeemer typedRedeemer \`withReferenceInput\`, "barName", 12)`
+* With a redeemer and explicit reference script: ``(Script.Versioned barPolicy Script.PlutusV3, someTxSkelRedeemer typedRedeemer `withReferenceInput` oRef, "barName", 12)``
 * With a redeemer and implicit reference script: `(Script.Versioned barPolicy Script.PlutusV3, someTxSkelRedeemer typedRedeemer, "fooName", -6)`, and turn on option `txOptAutoReferenceScript`
 
 ```haskell
