@@ -313,16 +313,6 @@ txSkelTemplate
 * ``paysPK ... `withStakingCredential` ...``
 * ``paysScript... ... `withStakingCredential` ...``
 
-### Spend a referenced script output
-
-```haskell
-txSkelTemplate
-  { ...
-    txSkelIns = Map.fromList [(scriptTxOutRefToSpend, txSkelSomeRedeemerForReferencedScript txOutRefCarryingReferenceScript redeemer), ...],
-    ...
-  }
-```
-
 ## Balancing
 
 ### Choose which wallet provides UTxOs to balance a transaction
@@ -559,4 +549,16 @@ txSkelTemplate
     txSkelOpts = def 
 	  { txOptAnchorResolution = AnchorResolutionHttp
 	  }
+```	
+
+## Withdrawals
+
+Withdrawals allow to execute scripts with the "rewarding" purpose but do not
+work properly in terms of withdrawn values.
+
+```haskell 
+    txSkelTemplate
+      { txSkelWithdrawals = scriptWithdrawal withdrawalScript someRedeemer someAdaValue,
+	    ...
+      }
 ```	
