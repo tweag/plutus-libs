@@ -34,7 +34,7 @@
   initDist :: InitialDistribution
   initDist = InitialDistribution
 	[ paysPK (wallet 3) (ada 6)
-        , paysScript fooTypedValidator FooTypedDatum (ada 6)
+    , paysScript fooTypedValidator FooTypedDatum (ada 6)
 	, paysPK (wallet 2) (ada 2) `withDatum` fooDatum
 	, paysPK (wallet 1) (ada 2) `withReferenceScript` fooValidator
 	]
@@ -118,9 +118,7 @@ foo = do
             validateTxSkel $
 			  txSkelTemplate
 			    { txSkelIns = ...,
-                  txSkelOuts = ...,
-				  txSkelMints = ...,
-				  txSkelSigners = ...
+                  ... 
 		        }
 		  ...
   ```
@@ -133,10 +131,20 @@ foo = do
             validateTxSkel' $
 		  	  txSkelTemplate
 			    { txSkelIns = ...,
-                  txSkelOuts = ...,
-                  txSkelMints = ...,
-                  txSkelSigners = ...
+                  ...
                 }
+          ...
+  ```
+* ... ignore any returned value
+  ```haskell
+  foo :: MonadBlockChain m => m ()
+  foo = do
+          ...
+          validateTxSkel_ $
+		    txSkelTemplate
+		      { txSkelIns = ...,
+                ...
+              }
           ...
   ```
 
@@ -171,18 +179,28 @@ txSkelTemplate
 
 ### Spend some UTxOs
 
-* No redeemer: `txSkelEmptyRedeemer`
-* With a given redeemer: `txSkelSomeRedeemer`
-* A redeemer and a reference script: `txSkelSomeRedeemerAndReferenceScript`
-* No redeemer but a reference script: `txSkelEmptyRedeemerAndReferenceScript`
+* No redeemer: `emptyTxSkelRedeemer`
+* With a given redeemer: `someTxSkelRedeemer myRedeemer`
+* Attach a reference input (with a reference script): `redeemer \`withReferenceInput\` txOutRef`
 
 ```haskell
 txSkelTemplate
     { ...
-      txSkelIns = Map.fromList [(txOutRef1, myRedeemer1), (txOutRef2, myRedeemer2]
+      txSkelIns = Map.fromList [(txOutRef1, myRedeemer1), (txOutRef2, myRedeemer2 `withReferenceInput` txOutRef)]
       ...
     }
 ```
+
+* Allow automatic attachment of reference scripts:
+```
+txSkelTemplate
+    { ...
+      txSkelIns = Map.fromList [(txOutRef1, myRedeemer1), (txOutRef2, myRedeemer2)],
+	  txSkelOpts = def { txOptAutoReferenceScript = True },
+      ...
+    }
+```
+
 
 ### Return `TxOutRef`s from transaction outputs from...
 
@@ -194,7 +212,7 @@ txSkelTemplate
     let (txOutRef1, _) : (txOutRef2, _) : _ = utxosFromCardanoTx cTx
     return (txOutRef1, txOutRef2)
   ```
-* ... the returns `TxOutRef`s
+* ... the returned `TxOutRef`s
   ```haskell
   endpointFoo :: MonadBlockChain m => m (Api.TxOutRef, Api.TxOutRef)
   endpointFoo = do
@@ -225,10 +243,10 @@ foo txOutRef = do
 * Mint tokens: positive amount
 * Burn tokens: negative amount
 
-* No redeemer: `(Script.Versioned fooPolicy Script.PlutusV3, txSkelEmptyRedeemer, "fooName", 3)`
-* With redeemer: `(Script.Versioned barPolicy Script.PlutusV3, txSkelSomeRedeemer typedRedeemer, "barName", -3)`
-* With a redeemer and reference script: `(Script.Versioned barPolicy Script.PlutusV3, txSkelSomeRedeemerAndReferenceScript txOutRef typedRedeemer, "barName", 12)`
-* With no redeemer but a reference scrip: `(Script.Versioned barPolicy Script.PlutusV3, txSkelEmptyRedeemerAndReferenceScript txOutRef, "fooName", -6)`
+* No redeemer: `(Script.Versioned fooPolicy Script.PlutusV3, emptyTxSkelRedeemer, "fooName", 3)`
+* With redeemer: `(Script.Versioned barPolicy Script.PlutusV3, someTxSkelRedeemer typedRedeemer, "barName", -3)`
+* With a redeemer and explicit reference script: `(Script.Versioned barPolicy Script.PlutusV3, someTxSkelRedeemer typedRedeemer \`withReferenceInput\`, "barName", 12)`
+* With a redeemer and implicit reference script: `(Script.Versioned barPolicy Script.PlutusV3, someTxSkelRedeemer typedRedeemer, "fooName", -6)`, and turn on option `txOptAutoReferenceScript`
 
 ```haskell
 txSkelTemplate
